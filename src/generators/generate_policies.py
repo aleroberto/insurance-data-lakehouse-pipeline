@@ -5,21 +5,13 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 
-print(f"data de hoje")
-
-from faker import Faker
-import pandas as pd
-import random
-from pathlib import Path
-from datetime import datetime, timedelta
-
-
 date_ingestion = datetime.now().strftime("%Y-%m-%d")
 
 fake = Faker("pt_BR")
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 
-
+def log_info(message):
+    print(f"{datetime.now().strftime('%y/%m/%d %H:%M:%S')} INFO GeneratePolicies: {message}")
 
 OUTPUT_PATH = Path(
     f"{BASE_DIR}/data/raw/policies/ingestion_date={date_ingestion}"
@@ -51,7 +43,7 @@ INSURERS = [
 
 records = []
 
-TOTAL_RECORDS = 3
+TOTAL_RECORDS = 30
 
 for i in range(TOTAL_RECORDS):
 
@@ -108,10 +100,8 @@ for i in range(TOTAL_RECORDS):
     records.append(policy)
 
 df = pd.DataFrame(records)
-
-
 df.to_csv(output_file, index=False)
 
-print(f"Policies dataset generated successfully.")
-print(f"File saved at: {output_file}")
-print(f"Total records: {len(df)}")
+log_info("Policies dataset generated successfully")
+log_info(f"File saved at: {output_file}")
+log_info(f"Total records: {len(df)}")
