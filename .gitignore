@@ -1,8 +1,7 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*.egg-info/
 
 # Virtual Environment
 venv/
@@ -15,20 +14,27 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
-# Environment variables
+# Environment
 .env
 
 # Logs
 logs/
 *.log
 
-# Data Lake Layers
-data/raw/
+# Spark
+spark-warehouse/
+metastore_db/
+*.crc
+_SUCCESS
+
+# Data Lake (gerado pela pipeline)
 data/bronze/
 data/silver/
 data/gold/
 
+# Pipeline outputs
+output/
+
 # OS
 .DS_Store
 Thumbs.db
-

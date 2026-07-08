@@ -35,6 +35,8 @@ services:
       - ./:/app
     working_dir: /app
     command: tail -f /dev/null
+    environment:
+      - PYTHONPATH=/app/src
 
 volumes:
   postgres_data:

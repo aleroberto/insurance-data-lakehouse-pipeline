@@ -1,15 +1,36 @@
 from pathlib import Path
 from datetime import datetime
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp, lit, current_date
+from common.config import (
+    RAW_PATH,
+    BRONZE_PATH,
+    SILVER_PATH,
+    GOLD_PATH,
+    FILE_FORMAT,
+    COMPRESSION,
+    SPARK_APP_NAME,
+    SPARK_MASTER
+)
 
+def create_spark_session():
 
+    builder = (
+        SparkSession.builder
+        .appName(SPARK_APP_NAME)
+        .master(SPARK_MASTER)
+    )
+
+    for key, value in SPARK_CONFIG.items():
+        builder = builder.config(key, value)
+
+    return builder.getOrCreate()
+    
 def create_spark_session():
     return (
         SparkSession.builder
-        .appName("insurance-raw-to-bronze")
-        .master("local[*]")
+        .appName(SPARK_APP_NAME)
+        .master(SPARK_MASTER)
         .getOrCreate()
     )
 
@@ -22,10 +43,24 @@ def log_info(message, layout):
 
 
 def process_to_bronze(spark, layout):
-    path_root = Path(__file__).resolve().parents[2]
 
-    input_path = f"{path_root}/data/raw/{layout}/ingestion_date=*/"
-    output_path = f"{path_root}/data/bronze/{layout}/"
+    input_path = (
+        RAW_PATH /
+        layout /
+        "ingestion_date=*"
+    )
+
+    print(f"***************** ESSE É O CAMINHO:{input_path}")
+
+    output_path = (
+        BRONZE_PATH /
+        layout 
+      
+    )
+
+
+
+
     batch_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     log_info(f"Input path: {input_path}", layout)
@@ -36,7 +71,8 @@ def process_to_bronze(spark, layout):
         spark.read
         .option("header", True)
         .option("inferSchema", True)
-        .csv(input_path)
+        .csv(str(input_path))
+      
     )
 
     df_bronze = (
@@ -54,9 +90,11 @@ def process_to_bronze(spark, layout):
     (
         df_bronze.write
         .mode("overwrite")
-        .option("compression", "snappy")
+        .option("compression", COMPRESSION)
+        .format(FILE_FORMAT)
         .partitionBy("processing_date")
-        .parquet(output_path)
+        .save(str(output_path))
+
     )
 
     log_info("Bronze write completed successfully", layout)
