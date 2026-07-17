@@ -1,39 +1,18 @@
 from pathlib import Path
 from datetime import datetime
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_timestamp, lit, current_date
+from common.spark import create_spark_session
 from common.config import (
     RAW_PATH,
     BRONZE_PATH,
     SILVER_PATH,
     GOLD_PATH,
     FILE_FORMAT,
-    COMPRESSION,
-    SPARK_APP_NAME,
-    SPARK_MASTER
-)
-
-def create_spark_session():
-
-    builder = (
-        SparkSession.builder
-        .appName(SPARK_APP_NAME)
-        .master(SPARK_MASTER)
+    COMPRESSION
     )
 
-    for key, value in SPARK_CONFIG.items():
-        builder = builder.config(key, value)
 
-    return builder.getOrCreate()
-    
-def create_spark_session():
-    return (
-        SparkSession.builder
-        .appName(SPARK_APP_NAME)
-        .master(SPARK_MASTER)
-        .getOrCreate()
-    )
-
+spark = create_spark_session()
 
 def log_info(message, layout):
     print(
@@ -50,16 +29,11 @@ def process_to_bronze(spark, layout):
         "ingestion_date=*"
     )
 
-    print(f"***************** ESSE É O CAMINHO:{input_path}")
-
     output_path = (
         BRONZE_PATH /
         layout 
       
     )
-
-
-
 
     batch_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -102,6 +76,11 @@ def process_to_bronze(spark, layout):
 
 if __name__ == "__main__":
     spark = create_spark_session()
+    spark.sparkContext.setLogLevel("WARN")
+
+    # Lista todas as configurações ativas na sua sessão atual
+    for key, value in spark.sparkContext.getConf().getAll():
+        print(f"{key} = {value}")
 
     try:
         process_to_bronze(spark, "policies")
